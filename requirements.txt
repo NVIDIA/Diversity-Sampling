@@ -1,0 +1,11 @@
+# Contains the versions the code was developped on. May run on older versions.
+
+matplotlib>=3.7.2
+numpy>=1.22.2
+pandas>=1.5.2
+seaborn>=0.12.0
+scikit-learn>=1.1.3
+tqdm>=4.65.0
+
+torch  # No version provided
+# cuml - OPTIONAL BUT RECOMMENDED

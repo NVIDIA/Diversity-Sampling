@@ -1,5 +1,10 @@
 # Diversity Sampling
 
+**TODO**:
+- Share the data
+- Typing (?)
+- Package the code, improve requirements.txt (?)
+
 ## Introduction
 
 This repository provides a GPU-compatible implementation of a Coreset sampler.
@@ -8,20 +13,21 @@ This repository provides a GPU-compatible implementation of a Coreset sampler.
 
 > In computational geometry, a coreset is a small set of points that approximates the shape of a larger point set, in the sense that applying some geometric measure to the two sets (such as their minimum bounding box volume) results in approximately equal numbers. 
 
-In our case, we aim at designing an efficient sampler that samples 𝑚 points that provide a good representation of the diversity of our data. The coreset problem is NP-hard therefore we use approximations. 
+In our case, we aim at designing an efficient sampler that outputs a diverse and representative subset of our data. The coreset problem is NP-hard therefore we use approximations. 
+
 
 ### Algorithm
 
 For a given dataset $D \in ℝ^{n \times d}$, build a subsample 𝑆 of 𝑚 data points that best represent 𝐷 :
 - Initialize 𝑆 with at least one data point 
 - While $\text{card}(𝑆)<𝑚$, append to 𝑆 the data point $\hat{𝑥} \in 𝐷$ that is the most diverse to it: 
-$$ \hat{𝑥} = \text{argmax}_{𝑥∈𝐷} (\lVert 𝑥 − 𝑆  \rVert) $$
+$$ \hat{𝑥} = \text{argmax}_{𝑥 \in 𝐷} (\lVert 𝑥 − 𝑆  \rVert) $$
 
 Computing the argmax can be slow, to prevent this we leverage two tricks :
 - $\lVert 𝑥 − 𝑆  \rVert$ can be computed on GPU
 - $\lVert 𝑥 − 𝑆 \rVert$ does not need to be computed for all $𝑠 \in 𝑆$ at every iteration, and leverages that at each iteration, $𝑆 = 𝑆 + \{ \hat{x} \} $
 
-This is leveraged using  $\lVert 𝑥 − 𝑆 \rVert  = \text{min}_{𝑠 \in 𝑆} {\lVert 𝑥 − 𝑠 \rVert}_2$, where ${\lVert 𝑥 − 𝑠 \rVert}_2$ is the $L_2$ norm :
+This is leveraged using  $\lVert 𝑥 − 𝑆 \rVert  = \text{min}_{𝑠 \in 𝑆} {\lVert 𝑥 − 𝑠 \rVert}_2$, where ${\lVert 𝑥 − 𝑠 \rVert}_2$ is the euclidian norm :
 $$ \text{min}_{𝑠 \in 𝑆} {\lVert 𝑥 − 𝑠 \rVert}_2 = \text{min} \left( \text{min}_{𝑠 \in 𝑆\setminus \{\hat{𝑥}\}} {\lVert 𝑥 − 𝑠 \rVert}_2 , {\lVert 𝑥 − \{\hat{𝑥}\} \rVert} \right) $$
 The left element of the min was computed during the previous step of the coreset, hence only the distance to the latest sampled points need to be computed.
 
