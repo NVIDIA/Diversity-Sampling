@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from typing import Dict, Union
 
 try:
     from cuml import TSNE
@@ -7,7 +8,15 @@ except ImportError:
     from sklearn.manifold import TSNE
 
 
-def plot_tsne(x, y, counts, min_size=100, figsize=(20, 20), legend=True, title=""):
+def plot_tsne(
+    x: np.ndarray,
+    y: np.ndarray,
+    counts: np.ndarray,
+    min_size: int = 100,
+    figsize: tuple = (20, 20),
+    legend: bool = True,
+    title: str = "",
+):
     """
     Plot a t-SNE visualization of data points.
 
@@ -42,7 +51,13 @@ def plot_tsne(x, y, counts, min_size=100, figsize=(20, 20), legend=True, title="
         plt.title(title, fontsize=15)
 
 
-def plot_dbscan_results(embeds, y, counts, min_size=100):
+def plot_dbscan_results(
+    embeds: np.ndarray,
+    y: np.ndarray,
+    counts: np.ndarray,
+    min_size: int = 100,
+    tsne_params: Dict[str, Union[int, float]] = {}
+) -> None:
     """
     Plot the results of DBScan clustering using t-SNE visualization.
     Note that data has to be subsampled to ~10000 points for t-SNE to converge.
@@ -52,14 +67,11 @@ def plot_dbscan_results(embeds, y, counts, min_size=100):
         y (numpy.ndarray): Array of cluster labels.
         counts (numpy.ndarray): Array of cluster counts.
         min_size (int, optional): Minimum size threshold for highlighting clusters. Defaults to 100.
+        tsne_params (dict, optional): t-SNE parameters. Defaults to {}.
     """
     S = len(embeds) // 10000
 
-    tsne = TSNE(
-        n_components=2,
-        perplexity=10,
-        early_exaggeration=10,
-    )
+    tsne = TSNE(n_components=2, **tsne_params)
 
     X_embedded = tsne.fit_transform(embeds[::S])
 
@@ -73,7 +85,14 @@ def plot_dbscan_results(embeds, y, counts, min_size=100):
     plt.show()
 
 
-def plot_coreset_results(embeds, y, counts, coreset_ids, min_size=100):
+def plot_coreset_results(
+    embeds: np.ndarray,
+    y: np.ndarray,
+    counts: np.ndarray,
+    coreset_ids: np.ndarray,
+    min_size: int = 100,
+    tsne_params: Dict[str, Union[int, float]] = {},
+):
     """
     Plot the results before and after applying a Coreset sampling using t-SNE visualization.
 
@@ -83,6 +102,7 @@ def plot_coreset_results(embeds, y, counts, coreset_ids, min_size=100):
         counts (numpy.ndarray): Array of cluster counts.
         coreset_ids (list): List of coreset sample indices.
         min_size (int, optional): Minimum size threshold for highlighting clusters. Defaults to 100.
+        tsne_params (dict, optional): t-SNE parameters. Defaults to {}.
     """
     S = len(embeds) // 10000
 
@@ -94,12 +114,7 @@ def plot_coreset_results(embeds, y, counts, coreset_ids, min_size=100):
     )
 
     # T-SNE
-    tsne = TSNE(
-        n_components=2,
-        perplexity=50,
-        early_exaggeration=200,
-    )
-
+    tsne = TSNE(n_components=2, **tsne_params)
     X_embedded = tsne.fit_transform(embeds[kept_tsne])
 
     try:

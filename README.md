@@ -2,7 +2,6 @@
 
 **TODO**:
 - Share the data
-- Typing (?)
 - Package the code, improve requirements.txt (?)
 
 ## Introduction
@@ -89,13 +88,13 @@ The structure is the following :
 
 ```
 src
-├── data
-├── src                     # Source code
-│   ├── coreset.py              # Coreset Sampler
-│   └── plot.py                 # Plotting utils
+├── input                   # Input data
 ├── notebooks               # Notebooks
 │   ├── Demo_wiki.ipynb         # Coreset demo on a wikipedia subset
 │   └── ... ?                   # Data processing utls for kaggle
-├── .gitignore               
-└── README.md
+├── src                     # Source code
+│   ├── coreset.py              # Coreset Sampler
+│   └── plot.py                 # Plotting utils
+├── README.md      
+└── requirements.txt
 ``` 

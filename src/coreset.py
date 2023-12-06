@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from tqdm import tqdm
+from typing import List, Union, Dict
 
 
 class CoresetSampler:
@@ -28,12 +29,12 @@ class CoresetSampler:
 
     def __init__(
         self,
-        n_samples=100,
-        initialization="",
-        device="cuda",
-        dbscan_params={},
-        tqdm_disable=True,
-        verbose=0,
+        n_samples: int = 100,
+        initialization: str = "",
+        device: str = "cuda",
+        dbscan_params: Dict[str, Union[int, float]] = {},
+        tqdm_disable: bool = True,
+        verbose: int = 0,
     ):
         """
         Constructor.
@@ -55,7 +56,11 @@ class CoresetSampler:
 
         self.dbscan_y = None
 
-    def initialize(self, embeddings, force=True):
+    def initialize(
+        self,
+        embeddings: np.ndarray,
+        force: bool = True,
+    ):
         """
         Initialize the sampler.
 
@@ -110,7 +115,12 @@ class CoresetSampler:
 
         return init_ids
 
-    def sample(self, embeddings, init_ids=None, n_samples=None):
+    def sample(
+        self,
+        embeddings: np.ndarray,
+        init_ids: Union[List[int], None] = None,
+        n_samples: Union[int, None] = None
+    ):
         """
         Sample representative points from embeddings.
 
