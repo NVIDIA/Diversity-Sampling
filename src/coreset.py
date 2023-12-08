@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from tqdm import tqdm
+from cuml import DBSCAN
 from typing import List, Union, Dict
 
 
@@ -85,16 +86,6 @@ class CoresetSampler:
                 y = self.dbscan_y
 
             else:
-                try:
-                    from cuml import DBSCAN
-                    if self.verbose:
-                        print("Using cuml gpu-accelerated algorithms")
-                except ImportError:
-                    from sklearn.cluster import DBSCAN
-
-                    if self.verbose:
-                        print("Using sklearn algorithms")
-
                 if self.verbose:
                     print("Initializing with DBScan")
                 dbscan = DBSCAN(**self.dbscan_params)

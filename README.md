@@ -1,12 +1,8 @@
 # Diversity Sampling
 
-**TODO**:
-- Share the data
-- Package the code, improve requirements.txt (?)
-
 ## Introduction
 
-This repository provides a GPU-compatible implementation of a Coreset sampler.
+This repository provides a GPU-accelerated implementation of a Coreset sampler.
 
 ### Coreset Sampler
 
@@ -53,13 +49,12 @@ Coreset is most useful when you have access to a big dataset with heavy bias, an
 ## How to use the repository
 
 ### Prerequisites
-> TODO: share data, specify requirements
 
 - Clone the repository
 - Setup the environment: 
   - Requirements: `pip install -r requirements.txt`
-  - (Optional): Install [Torch on GPU](https://pytorch.org/get-started/locally/) and [RAPIDS](https://docs.rapids.ai/install) for optimal use of the algorithm!
-- To run `Demo_wiki.ipynb`, download the data (TODO: share links)
+  - Install [Torch on GPU](https://pytorch.org/get-started/locally/) and [RAPIDS](https://docs.rapids.ai/install) for GPU-accelerated computations
+- To run `Demo_wiki.ipynb`, download the data [here](https://www.kaggle.com/datasets/theoviel/diversity-sampling-demo-data/) into the `input` folder
 
 ### Quick start
 
