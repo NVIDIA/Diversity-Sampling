@@ -15,16 +15,12 @@ In our case, we aim at designing an efficient sampler that outputs a diverse and
 
 For a given dataset $D \in ℝ^{n \times d}$, build a subsample 𝑆 of 𝑚 data points that best represent 𝐷 :
 - Initialize 𝑆 with at least one data point 
-- While $\text{card}(𝑆)<𝑚$, append to 𝑆 the data point $\hat{𝑥} \in 𝐷$ that is the most diverse to it: 
+- While card(𝑆)<𝑚, append to 𝑆 the data point $\hat{𝑥} \in 𝐷$ that is the most diverse to it: 
 $$ \hat{𝑥} = \text{argmax}_{𝑥 \in 𝐷} (\lVert 𝑥 − 𝑆  \rVert) $$
 
 Computing the argmax can be slow, to prevent this we leverage two tricks :
 - $\lVert 𝑥 − 𝑆  \rVert$ can be computed on GPU
-- $\lVert 𝑥 − 𝑆 \rVert$ does not need to be computed for all $𝑠 \in 𝑆$ at every iteration, and leverages that at each iteration, $𝑆 = 𝑆 + \{ \hat{x} \} $
-
-This is leveraged using  $\lVert 𝑥 − 𝑆 \rVert  = \text{min}_{𝑠 \in 𝑆} {\lVert 𝑥 − 𝑠 \rVert}_2$, where ${\lVert 𝑥 − 𝑠 \rVert}_2$ is the euclidian norm :
-$$ \text{min}_{𝑠 \in 𝑆} {\lVert 𝑥 − 𝑠 \rVert}_2 = \text{min} \left( \text{min}_{𝑠 \in 𝑆\setminus \{\hat{𝑥}\}} {\lVert 𝑥 − 𝑠 \rVert}_2 , {\lVert 𝑥 − \{\hat{𝑥}\} \rVert} \right) $$
-The left element of the min was computed during the previous step of the coreset, hence only the distance to the latest sampled points need to be computed.
+- $\lVert 𝑥 − 𝑆 \rVert$ does not need to be computed for all $𝑠 \in 𝑆$ at every step since at each iteration 𝑆 = 𝑆 + $\hat{x}$
 
 ### Initialization
 
