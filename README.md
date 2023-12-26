@@ -15,8 +15,7 @@ In our case, we aim at designing an efficient sampler that outputs a diverse and
 
 For a given dataset $D \in ℝ^{n \times d}$, build a subsample 𝑆 of 𝑚 data points that best represent 𝐷 :
 - Initialize 𝑆 with at least one data point 
-- While card(𝑆)<𝑚, append to 𝑆 the data point $\hat{𝑥} \in 𝐷$ that is the most diverse to it: 
-$$ \hat{𝑥} = \text{argmax}_{𝑥 \in 𝐷} (\lVert 𝑥 − 𝑆  \rVert) $$
+- While card(𝑆)<𝑚, append to 𝑆 the data point $\hat{𝑥} \in 𝐷$ that is the most diverse to it: $\hat{𝑥} = \text{argmax}_{𝑥 \in 𝐷} (\lVert 𝑥 − 𝑆  \rVert)$
 
 Computing the argmax can be slow, to prevent this we leverage two tricks :
 - $\lVert 𝑥 − 𝑆  \rVert$ can be computed on GPU
