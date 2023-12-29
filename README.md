@@ -80,8 +80,7 @@ The structure is the following :
 src
 ├── input                   # Input data
 ├── notebooks               # Notebooks
-│   ├── Demo_wiki.ipynb         # Coreset demo on a wikipedia subset
-│   └── ... ?                   # Data processing utls for kaggle
+│   └── Demo_wiki.ipynb         # Coreset demo on a wikipedia subset
 ├── src                     # Source code
 │   ├── coreset.py              # Coreset Sampler
 │   └── plot.py                 # Plotting utils
