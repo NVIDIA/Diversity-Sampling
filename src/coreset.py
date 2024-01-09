@@ -53,6 +53,7 @@ class CoresetSampler:
         dbscan_params: Dict[str, Union[int, float]] = {},
         tqdm_disable: bool = True,
         verbose: int = 0,
+        random_seed: int = 0
     ):
         """
         Constructor.
@@ -64,6 +65,7 @@ class CoresetSampler:
             dbscan_params (dict): Parameters for DBScan clustering if using "dbscan" initialization.
             tqdm_disable (bool): Whether to disable tqdm progress bar.
             verbose (int): Verbosity level.
+            random_seed (int): Makes sampling deterministic unless dbscan initialization is used.
         """
         self.n_samples = n_samples
         self.initialization = initialization
@@ -73,6 +75,7 @@ class CoresetSampler:
         self.verbose = verbose
 
         self.dbscan_y = None
+        self.rng = np.random.default_rng(seed=random_seed)
 
     def initialize(
         self,
@@ -94,7 +97,7 @@ class CoresetSampler:
             list: List of initialized sample indices.
         """
 
-        init_ids = [np.random.choice(len(embeddings))]
+        init_ids = [self.rng.choice(len(embeddings))]
 
         if self.initialization == "dbscan":
             if self.dbscan_y is not None and not force:
@@ -115,8 +118,8 @@ class CoresetSampler:
                 self.dbscan_y = y
 
             counts = np.bincount(y + 1)
-            biggest = np.argsort(counts[1:])[::-1]
-            init_ids = [np.random.choice(np.where(y == l)[0]) for l in biggest]
+            biggest = np.argsort(-counts[1:])
+            init_ids = [self.rng.choice(np.where(y == l)[0]) for l in biggest]
 
         if self.verbose:
             print(f"Initialize with {len(init_ids)} points")
@@ -154,6 +157,7 @@ class CoresetSampler:
         embeddings = torch.from_numpy(embeddings).to(self.device)
 
         # Compute minimum distances to the initialization ids of all embeddings
+        min_distances = None
         if len(ids) > 1:
             min_distances = [
                 ((embeddings[id_].unsqueeze(0) - embeddings) ** 2).sum(
@@ -162,19 +166,18 @@ class CoresetSampler:
                 for id_ in ids[:-1]
             ]
             min_distances = torch.cat(min_distances, 1).amin(1, keepdims=True)
-        else:
-            min_distances = torch.empty(len(embeddings), 0).to(self.device)
 
-        for i in tqdm(range(len(ids), n_samples), disable=self.tqdm_disable):
+        for _ in tqdm(range(len(ids), n_samples), disable=self.tqdm_disable):
             current = embeddings[ids[-1]]  # Last appended id
 
             # Compute distances to the last sampled point
             new_dist = ((current.unsqueeze(0) - embeddings) ** 2).sum(-1, keepdims=True)
 
             # Update the minimum distance using(min(all_previous, current))
-            min_distances = torch.cat([min_distances, new_dist], 1).amin(
-                1, keepdims=True
-            )
+            if min_distances is None:
+                min_distances = new_dist
+            else:
+                min_distances = torch.minimum(min_distances, new_dist)
 
             # Sample the farthest point
             fartherst = min_distances.argmax().item()
