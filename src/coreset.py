@@ -18,7 +18,6 @@
 import torch
 import numpy as np
 from tqdm import tqdm
-from cuml import DBSCAN
 from typing import List, Union, Dict
 
 
@@ -50,7 +49,7 @@ class CoresetSampler:
         n_samples: int = 100,
         initialization: str = "",
         device: str = "cuda",
-        dbscan_params: Dict[str, Union[int, float]] = {},
+        dbscan_params: Dict[str, Union[int, float]] = None,
         tqdm_disable: bool = True,
         verbose: int = 0,
         random_seed: int = 0
@@ -70,12 +69,25 @@ class CoresetSampler:
         self.n_samples = n_samples
         self.initialization = initialization
         self.device = device
-        self.dbscan_params = dbscan_params
         self.tqdm_disable = tqdm_disable
         self.verbose = verbose
 
         self.dbscan_y = None
         self.rng = np.random.default_rng(seed=random_seed)
+
+        if self.initialization == "dbscan":
+            try:
+                from cuml import DBSCAN
+            except ImportError:
+                print("Install cuML to be able use DBSCAN. No initialization will be used.")
+                self.initialization = ""
+
+        if self.initialization == "dbscan":
+            if dbscan_params is None:
+                dbscan_params = dict()
+            if self.verbose:
+                print("Initializing with DBScan")
+            self.dbscan = DBSCAN(**dbscan_params)
 
     def initialize(
         self,
@@ -102,24 +114,19 @@ class CoresetSampler:
         if self.initialization == "dbscan":
             if self.dbscan_y is not None and not force:
                 if self.verbose:
-                    print("Use previously computed dbscan_y")
-                y = self.dbscan_y
+                    print("Using previously computed dbscan_y")
 
             else:
-                if self.verbose:
-                    print("Initializing with DBScan")
-                dbscan = DBSCAN(**self.dbscan_params)
-                dbscan = dbscan.fit(embeddings)
+                self.dbscan.fit(embeddings)
 
                 try:  # cuml
-                    y = dbscan.labels_.values.get()
+                    self.dbscan_y = self.dbscan.labels_.values.get()
                 except AttributeError:
-                    y = dbscan.labels_
-                self.dbscan_y = y
+                    self.dbscan_y = self.dbscan.labels_
 
-            counts = np.bincount(y + 1)
-            biggest = np.argsort(-counts[1:])
-            init_ids = [self.rng.choice(np.where(y == l)[0]) for l in biggest]
+            counts = np.bincount(self.dbscan_y + 1)
+            cluster_labels = np.argsort(-counts[1:])
+            init_ids = [self.rng.choice(np.where(self.dbscan_y == label)[0]) for label in cluster_labels]
 
         if self.verbose:
             print(f"Initialize with {len(init_ids)} points")
@@ -180,7 +187,7 @@ class CoresetSampler:
                 min_distances = torch.minimum(min_distances, new_dist)
 
             # Sample the farthest point
-            fartherst = min_distances.argmax().item()
-            ids.append(fartherst)
+            farthest = min_distances.argmax().item()
+            ids.append(farthest)
 
         return ids
